@@ -40,6 +40,7 @@ def display_image(image):
         draw_red_circle(x, y)
         rgb_values = extract_rgb_values(image, x, y, radius=10)
         selected_areas.append((selected_area, rgb_values))
+        plot_area_histogram(rgb_values)
 
     canvas.bind("<Button-1>", on_click)
 
@@ -91,18 +92,16 @@ def display_sheet(df):
     save_excel_button.pack()
 
 def plot_histogram():
-    global selected_areas
     if not selected_areas:
         messagebox.showinfo("No Areas Selected", "Please select areas on the image first.")
         return
 
+def plot_area_histogram(rgb_values):
     plt.figure()
-    for idx, (_, rgb_values) in enumerate(selected_areas, 1):
-        np_rgb_values = np.array(rgb_values)
-        plt.hist(np_rgb_values[:, 0], bins=256, color='r', histtype='step', alpha=0.7, label=f"Area {idx} (R)")
-        plt.hist(np_rgb_values[:, 1], bins=256, color='g', histtype='step', alpha=0.7, label=f"Area {idx} (G)")
-        plt.hist(np_rgb_values[:, 2], bins=256, color='b', histtype='step', alpha=0.7, label=f"Area {idx} (B)")
-
+    np_rgb_values = np.array(rgb_values)
+    plt.hist(np_rgb_values[:, 0], bins=256, color='r', histtype='step', alpha=0.7, label="R")
+    plt.hist(np_rgb_values[:, 1], bins=256, color='g', histtype='step', alpha=0.7, label="G")
+    plt.hist(np_rgb_values[:, 2], bins=256, color='b', histtype='step', alpha=0.7, label="B")
     plt.xlabel('color value')
     plt.ylabel('number of pixels')
     plt.legend()
