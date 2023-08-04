@@ -2,6 +2,8 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 from PIL import Image, ImageTk, ImageDraw
 import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
 
 selected_areas = []
 image = None
@@ -88,6 +90,24 @@ def display_sheet(df):
     save_excel_button = tk.Button(top, text="Save to Excel File", command=lambda: save_to_excel_file(df))
     save_excel_button.pack()
 
+def plot_histogram():
+    global selected_areas
+    if not selected_areas:
+        messagebox.showinfo("No Areas Selected", "Please select areas on the image first.")
+        return
+
+    plt.figure()
+    for idx, (_, rgb_values) in enumerate(selected_areas, 1):
+        np_rgb_values = np.array(rgb_values)
+        plt.hist(np_rgb_values[:, 0], bins=256, color='r', histtype='step', alpha=0.7, label=f"Area {idx} (R)")
+        plt.hist(np_rgb_values[:, 1], bins=256, color='g', histtype='step', alpha=0.7, label=f"Area {idx} (G)")
+        plt.hist(np_rgb_values[:, 2], bins=256, color='b', histtype='step', alpha=0.7, label=f"Area {idx} (B)")
+
+    plt.xlabel('color value')
+    plt.ylabel('number of pixels')
+    plt.legend()
+    plt.show()
+
 if __name__ == "__main__":
     root = tk.Tk()
     root.title("Professor Aaron's Magic RGB Extractor")
@@ -103,5 +123,8 @@ if __name__ == "__main__":
 
     sheet_button = tk.Button(root, text="Show RGB Values Sheet", command=show_rgb_sheet)
     sheet_button.pack(pady=5)
+
+    histogram_button = tk.Button(root, text="Plot Histogram", command=plot_histogram)
+    histogram_button.pack(pady=5)
 
     root.mainloop()
