@@ -4,6 +4,9 @@ from PIL import Image, ImageTk, ImageDraw
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+import scipy
+from scipy import ndimage
+import matplotlib.colors as colors
 
 selected_areas = []
 image = None
@@ -79,10 +82,7 @@ def display_sheet(df):
     table = tk.Text(top, wrap=tk.NONE)
     table.pack()
 
-    # Create a table-like string for displaying in the Text widget
     table_str = df.to_string(index=False)
-
-    # Insert the table into the Text widget
     table.insert(tk.END, table_str)
 
     save_text_button = tk.Button(top, text="Save to Text File", command=lambda: save_to_text_file(df))
@@ -96,6 +96,9 @@ def plot_histogram():
         messagebox.showinfo("No Areas Selected", "Please select areas on the image first.")
         return
 
+    # Placeholder for the histogram plot function
+    pass
+
 def plot_area_histogram(rgb_values):
     plt.figure()
     np_rgb_values = np.array(rgb_values)
@@ -106,6 +109,91 @@ def plot_area_histogram(rgb_values):
     plt.ylabel('number of pixels')
     plt.legend()
     plt.show()
+
+def cmyk_conversion(rgb):
+    r, g, b = rgb[0] / 255, rgb[1] / 255, rgb[2] / 255
+    k = 1 - max(r, g, b)
+    c = (1 - r - k) / (1 - k) if (1 - k) != 0 else 0
+    m = (1 - g - k) / (1 - k) if (1 - k) != 0 else 0
+    y = (1 - b - k) / (1 - k) if (1 - k) != 0 else 0
+    return c, m, y, k
+
+def display_cmky_tab(rgb_values):
+    top = tk.Toplevel(root)
+    top.title("CMYK Values")
+
+    table = tk.Text(top, wrap=tk.NONE)
+    table.pack()
+
+    cmky_data = []
+    for idx, rgb in enumerate(rgb_values, 1):
+        c, m, y, k = cmyk_conversion(rgb)
+        cmky_data.append([f"Selected Area {idx}", c, m, y, k])
+
+    cmky_df = pd.DataFrame(cmky_data, columns=["Area", "C", "M", "Y", "K"])
+
+    table_str = cmky_df.to_string(index=False)
+    table.insert(tk.END, table_str)
+
+    save_text_button = tk.Button(top, text="Save to Text File", command=lambda: save_to_text_file(cmky_df))
+    save_text_button.pack()
+
+    save_excel_button = tk.Button(top, text="Save to Excel File", command=lambda: save_to_excel_file(cmky_df))
+    save_excel_button.pack()
+
+# ... (Previous code remains the same)
+
+def plot_cmyk_histogram(rgb_values):
+    if not selected_areas:
+        messagebox.showinfo("No Areas Selected", "Please select areas on the image first.")
+        return
+
+    c_values = []
+    m_values = []
+    y_values = []
+    k_values = []
+
+    for rgb in rgb_values:
+        c, m, y, k = cmyk_conversion(rgb)
+        c_values.append(c)
+        m_values.append(m)
+        y_values.append(y)
+        k_values.append(k)
+
+    plt.figure(figsize=(12, 4))
+
+    plt.subplot(1, 4, 1)
+    plt.hist(c_values, bins=100, range=(0.0, 1.0), histtype='stepfilled', color='cyan', label='Cyan')
+    plt.title("Cyan")
+    plt.xlabel("Value")
+    plt.ylabel("Frequency")
+    plt.legend()
+
+    plt.subplot(1, 4, 2)
+    plt.hist(m_values, bins=100, range=(0.0, 1.0), histtype='stepfilled', color='magenta', label='Magenta')
+    plt.title("Magenta")
+    plt.xlabel("Value")
+    plt.ylabel("Frequency")
+    plt.legend()
+
+    plt.subplot(1, 4, 3)
+    plt.hist(y_values, bins=100, range=(0.0, 1.0), histtype='stepfilled', color='yellow', label='Yellow')
+    plt.title("Yellow")
+    plt.xlabel("Value")
+    plt.ylabel("Frequency")
+    plt.legend()
+
+    plt.subplot(1, 4, 4)
+    plt.hist(k_values, bins=100, range=(0.0, 1.0), histtype='stepfilled', color='black', label='Key (Black)')
+    plt.title("Key (Black)")
+    plt.xlabel("Value")
+    plt.ylabel("Frequency")
+    plt.legend()
+
+    plt.tight_layout()
+    plt.show()
+
+
 
 if __name__ == "__main__":
     root = tk.Tk()
@@ -125,5 +213,11 @@ if __name__ == "__main__":
 
     histogram_button = tk.Button(root, text="Plot Histogram", command=plot_histogram)
     histogram_button.pack(pady=5)
+    
+    cmky_button = tk.Button(root, text="Show CMYK Values", command=lambda: display_cmky_tab(selected_areas[-1][1]))
+    cmky_button.pack(pady=5)
+    
+    cmyk_histogram_button = tk.Button(root, text="Plot CMYK Histogram", command=lambda: plot_cmyk_histogram(selected_areas[-1][1]))
+    cmyk_histogram_button.pack(pady=5)
 
     root.mainloop()
