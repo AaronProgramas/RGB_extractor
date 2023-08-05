@@ -210,9 +210,6 @@ if __name__ == "__main__":
 
     sheet_button = tk.Button(root, text="Show RGB Values Sheet", command=show_rgb_sheet)
     sheet_button.pack(pady=5)
-
-    histogram_button = tk.Button(root, text="Plot Histogram", command=plot_histogram)
-    histogram_button.pack(pady=5)
     
     cmky_button = tk.Button(root, text="Show CMYK Values", command=lambda: display_cmky_tab(selected_areas[-1][1]))
     cmky_button.pack(pady=5)
