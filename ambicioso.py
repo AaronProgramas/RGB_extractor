@@ -117,7 +117,6 @@ def plot_histogram():
         messagebox.showinfo("No Areas Selected", "Please select areas on the image first.")
         return
 
-    # Placeholder for the histogram plot function
     pass
 
 def plot_area_histogram(rgb_values):
@@ -159,10 +158,6 @@ def display_cmky_tab(rgb_values):
     df = pd.DataFrame(cmky_frequency_matrix)
     df.columns = [f"C_{i}" for i in range(256)] + [f"M_{i}" for i in range(256)] + [f"Y_{i}" for i in range(256)] + [f"K_{i}" for i in range(256)]
     display_sheet(df)
-
-
-
-
 
 def plot_cmyk_histogram(rgb_values):
     if not selected_areas:
